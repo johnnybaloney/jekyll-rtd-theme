@@ -2,8 +2,7 @@ source "https://rubygems.org"
 
 ruby '2.5.5'
 
-gem 'jekyll', '3.9.1'
-# gem 'jekyll', '4.2.0'
+gem 'jekyll', '4.2.0'
 
 gem 'jekyll-avatar', '0.7.0'
 gem 'jekyll-commonmark', '1.3.1'

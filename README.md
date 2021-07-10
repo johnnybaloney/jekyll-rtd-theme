@@ -5,6 +5,27 @@
 
 Just another documentation theme compatible with GitHub Pages
 
+## Changelog
+
+* Removed Github Pages dependency.
+* Updated to work with Jekyll 4.2.
+
+When updating Jekyll 4.2 the `site_pages` object that is created based on `site.html_pages` contains entries for top-level directories with URL that has `README.html` appended to the end.
+
+For example, in 3.9:
+
+```
+dir: /test/, url: /test/
+dir: /test_long/, url: /test_long/
+```
+
+whereas in 4.2:
+
+```
+dir: /test/, url /test/README.html
+dir: /test_long/, url /test_long/README.html
+```
+
 ## What it does?
 
 This theme is inspired by [sphinx-rtd-theme](https://github.com/readthedocs/sphinx_rtd_theme) and refactored with:
