@@ -13,3 +13,53 @@
         {% endunless %}
     {% endif %}
 {% endfor %}
+
+{% assign site_files_urls = "" | split: "" %}
+{% for p in site_pages %}
+    {% if p.dir != p.url %}
+        {% unless p.url contains "README.html" %}
+            {% assign site_files_urls = site_files_urls | push:p.url %}
+        {% endunless %}
+    {% endif %}
+{% endfor %}
+{% assign site_files_urls_json = site_files_urls | jsonify %}
+
+{% assign site_files_dirs = "" | split: "" %}
+{% for p in site_pages %}
+    {% if p.dir != p.url %}
+        {% unless p.url contains "README.html" %}
+            {% assign site_files_dirs = site_files_dirs | push:p.dir %}
+        {% endunless %}
+    {% endif %}
+{% endfor %}
+{% assign site_files_dirs_json = site_files_dirs | jsonify %}
+
+{% assign site_files_names = "" | split: "" %}
+{% for p in site_pages %}
+    {% if p.dir != p.url %}
+        {% unless p.url contains "README.html" %}
+            {% assign site_files_names = site_files_names | push:p.name %}
+        {% endunless %}
+    {% endif %}
+{% endfor %}
+{% assign site_files_names_json = site_files_names | jsonify %}
+
+{% assign site_files_titles = "" | split: "" %}
+{% for p in site_pages %}
+    {% if p.dir != p.url %}
+        {% unless p.url contains "README.html" %}
+            {% assign site_files_titles = site_files_titles | push:p.title %}
+        {% endunless %}
+    {% endif %}
+{% endfor %}
+{% assign site_files_titles_json = site_files_titles | jsonify %}
+
+{% assign site_files_sort = "" | split: "" %}
+{% for p in site_pages %}
+    {% if p.dir != p.url %}
+        {% unless p.url contains "README.html" %}
+            {% assign site_files_sort = site_files_sort | push:p.sort %}
+        {% endunless %}
+    {% endif %}
+{% endfor %}
+{% assign site_files_sort_json = site_files_sort | jsonify %}
