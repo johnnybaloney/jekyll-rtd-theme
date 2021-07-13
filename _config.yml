@@ -28,18 +28,19 @@ plugins:
 - jemoji
 
 exclude:
-  - Makefile
-  - CNAME
-  - LICENSE
-  - update.sh
-  - Gemfile
-  - Gemfile.lock
-  - requirements.txt
-  - node_modules
-  - package.json
-  - package-lock.json
-  - webpack.config.js
-  - jekyll-rtd-theme.gemspec
+- Makefile
+- CNAME
+- LICENSE
+- update.sh
+- Gemfile
+- Gemfile.lock
+- requirements.txt
+- node_modules
+- package.json
+- package-lock.json
+- webpack.config.js
+- jekyll-rtd-theme.gemspec
+- .idea
 
 #liquid:
 #  error_mode: strict

@@ -6,7 +6,7 @@ module Jekyll
       @text = text
     end
 
-    # Lookup allows access to the page/post variables through the tag context
+    # Access variable [name] from Liquid.
     def lookup(context, name)
       lookup = context
       name.split(".").each { |value| lookup = lookup[value] }
@@ -14,50 +14,122 @@ module Jekyll
     end
 
     def render(context)
-      _htmlPages = lookup(context, 'site.html_pages')
-      _paths = _htmlPages.map { |p| FileEntry.new(p.dir, p.url, p.name) }
-
-      _dirsJson = lookup(context, 'site_files_dirs_json')
-      _urlsJson = lookup(context, 'site_files_urls_json')
-      _namesJson = lookup(context, 'site_files_names_json')
-      _titlesJson = lookup(context, 'site_files_titles_json')
-      _sortJson = lookup(context, 'site_files_sort_json')
-      _dirs = JSON.parse(_dirsJson)
-      _urls = JSON.parse(_urlsJson)
-      _names = JSON.parse(_namesJson)
-      _titles = JSON.parse(_titlesJson)
-      _sort = JSON.parse(_sortJson)
-      _fileEntries = Array.new
-      for i in 0.._dirs.length()-1
-        _fileEntries.append(Reference.new(_dirs[i], _urls[i], _names[i], _titles[i], _sort[i]))
+      urls_json = lookup(context, 'site_files_urls_json')
+      urls = JSON.parse(urls_json)
+      @root = Node.new(0, "")
+      urls.each do |url|
+        @root.add_file_path(url)
       end
-      "html pages: #{_paths.join('<br/>')}<br/><br/>REFERENCE:<br/>#{_fileEntries.join('<br/>')}<br/><br/>#{Time.now}"
+      @root.collect_items("").map { |item| "#{item.path} (#{item.depth})" }.join("<br/>")
     end
   end
 
-  class FileEntry
-    def initialize(dir, url, name)
-      @dir = dir
-      @url = url
-      @name = name
+  require "set"
+
+  class Node
+    SEPARATOR = '/'
+
+    attr_reader :directory
+
+    def initialize(depth, directory)
+      @depth = depth
+      @directory = directory
+      @pages = SortedSet.new
+      @subdirectories = SortedSet.new
     end
+
+    def add_file_path(path)
+      dir_segments = path[1..-1].split(SEPARATOR)
+      add_file_path_list(dir_segments)
+    end
+
+    def add_file_path_list(dir_segments)
+      first = dir_segments[0]
+      other = dir_segments[1..-1]
+      if other.length == 0
+        @pages << first
+        return
+      end
+      @subdirectories.each do |subdirectory|
+        if subdirectory.directory == first
+          subdirectory.add_file_path_list(other)
+          return
+        end
+      end
+      new_subdirectory = Node.new(@depth + 1, first)
+      @subdirectories << new_subdirectory
+      new_subdirectory.add_file_path_list(other)
+    end
+
+    def collect_items(parent)
+      items = SortedSet.new
+      current_dir_abs_path = parent + @directory + SEPARATOR
+      items.add(Item.new(true, @directory, current_dir_abs_path, @depth))
+      @pages.each do |page|
+        items.add(Item.new(false, page, current_dir_abs_path + page, @depth))
+      end
+      @subdirectories.each do |subdirectory|
+        items.merge(subdirectory.collect_items(current_dir_abs_path))
+      end
+      items
+    end
+
+    def <=>(o)
+      @directory <=> o.directory
+    end
+
     def to_s
-      "dir: #{@dir}, url: #{@url}, name: #{@name}"
+      "Node{" +
+        "level=#{@depth}" +
+        ", directory='#{@directory}'" +
+        ", pages=#{@pages}" +
+        ", subdirectories=#{@subdirectories}}"
     end
   end
 
-  class Reference
-    def initialize(dir, url, name, title, sort)
-      @dir = dir
-      @url = url
+  class Item
+
+    attr_reader :path
+    attr_reader :depth
+
+    def initialize(is_directory, name, path, depth)
+      @is_directory = is_directory
       @name = name
-      @title = title
-      @sort = sort
+      @path = path
+      @depth = depth
     end
+
+    def <=>(o)
+      @path <=> o.path
+    end
+
     def to_s
-      "dir: #{@dir}, url: #{@url}, name: #{@name}, title: #{@title}, sort: #{@sort}"
+      "Item{" +
+        "is_directory=#{@is_directory}" +
+        ", name='#{@name}'" +
+        ", path='#{@path}'" +
+        ", depth=#{@depth}}"
     end
   end
+
+  def test
+    @root = Node.new(0, "")
+    @root.add_file_path("/foo.html")
+    @root.add_file_path("/rootfile.html")
+    @root.add_file_path("/foo/foo.html")
+    @root.add_file_path("/bar/bar.html")
+    @root.add_file_path("/a/b/c/d2.html")
+    @root.add_file_path("/a/b/c/d1.html")
+    @root.add_file_path("/a/a/a/a.html")
+    puts "PRINTING NODE"
+    puts @root
+    puts "PRINTING ITEMS"
+    puts @root.collect_items("")
+    puts "PRINTING ITEMS with JOIN"
+    puts @root.collect_items("").map { |item| "#{item.path} (#{item.depth})" }.join("<br/>")
+  end
+
+  # test
 end
 
 Liquid::Template.register_tag('render_sidebar', Jekyll::RenderSidebar)
