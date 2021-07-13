@@ -20,7 +20,36 @@ module Jekyll
       urls.each do |url|
         @root.add_file_path(url)
       end
-      @root.collect_items("").map { |item| "#{item.path} (#{item.depth})" }.join("<br/>")
+      # @root.collect_items("").map { |item| "#{item.path} (#{item.depth})" }.join("<br/>")
+      # ROOT FILES - LEVEL 0 (-> 1)
+      sidebar = "<ul>"
+      sidebar += "<li class=\"toc level-1\" data-sort=\"1\" data-level=\"1\">"
+      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/file.html\">file level 1</a>"
+      sidebar += "</li>"
+      sidebar += "</ul>"
+      # either: SUBDIRECTORIES - LEVEL 1 (-> 2)
+      sidebar += "<a class=\"caption d-block text-uppercase no-wrap px-2 py-0\" href=\"/directory2/\">directory level 2</a>"
+      # SUBDIRECTORY ITEMS
+      sidebar += "<ul>"
+      sidebar += "<li class=\"toc level-2\" data-level=\"2\">"
+      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory2/file1.html\">file1 level 2</a>"
+      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory2/file2.html\">file2 level 2</a>"
+      sidebar += "</li>"
+      sidebar += "</ul>"
+      # or: SUBDIRECTORIES - LEVEL 2+ (-> 3+)
+      sidebar += "<li class=\"toc level-2\">"
+      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/\">directory level 3+</a>"
+      sidebar += "<ul>"
+      # files at this level
+      sidebar += "<li class=\"toc level-3\" data-level=\"3\">"
+      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/file1.html\">file1 level 3+</a>"
+      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/file2.html\">file2 level 3+</a>"
+      sidebar += "</li>"
+      sidebar += "</ul>"
+      sidebar += "</li>"
+      @root.collect_items("").each do |item|
+      end
+      sidebar
     end
   end
 
