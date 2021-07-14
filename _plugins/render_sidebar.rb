@@ -14,8 +14,8 @@ module Jekyll
     end
 
     def top_level_page_link(page, root)
-      link = "<li class=\"toc level-#{root.depth}\" data-sort=\"#{page.sort}\" data-level=\"#{root.depth}\">"
-      link += "<a class=\"d-flex flex-items-baseline\" href=\"/#{page.page}\">#{page.title}</a>"
+      link = "<li class=\"toc level-#{root.depth + 1} \" data-sort=\"#{page.sort}\" data-level=\"#{root.depth + 1}\">"
+      link += "<a class=\"d-flex flex-items-baseline \" href=\"/#{page.page}\">#{page.title}</a>"
       link += "</li>"
       link
     end
@@ -35,14 +35,16 @@ module Jekyll
         links += "</a>"
         links += "<ul>" # _toctree.liquid
         subdir.pages.each do |page|
-          links += "<li class=\"toc level-#{subdir.depth}\" data-sort=\"#{page.sort}\" data-level=\"#{subdir.depth}\">"
-          links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}#{page.page}\">"
+          links += "<li class=\"toc level-#{subdir.depth} \" data-sort=\"#{page.sort}\" data-level=\"#{subdir.depth}\">"
+          links += "<a class=\"d-flex flex-items-baseline \" href=\"#{abs_dir_path}#{page.page}\">"
           links += (page.sort != nil ? "#{page.sort}. " : "") + page.title
           links += "</a></li>"
         end
-        links += "<li class=\"toc level-#{subdir.depth}\">"
-        links += subdirectory_links(subdir.subdirectories, dir_to_title)
-        links += "</li>"
+        if subdir.subdirectories.length > 0
+          links += "<li class=\"toc level-#{subdir.depth}\">"
+          links += subdirectory_links(subdir.subdirectories, dir_to_title)
+          links += "</li>"
+        end
         links += "</ul>" # _toctree.liquid end
       end
       links
