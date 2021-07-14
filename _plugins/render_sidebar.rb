@@ -13,42 +13,63 @@ module Jekyll
       lookup
     end
 
+    def top_level_page_link(page)
+      link = "<li class=\"toc level-1\" data-sort=\"1\" data-level=\"1\">"
+      link += "<a class=\"d-flex flex-items-baseline\" href=\"/#{page}\">#{page}</a>"
+      link += "</li>"
+      link
+    end
+
+    def subdirectory_links(subdirectories)
+      links = ""
+      subdirectories.each do |subdirectory|
+        links += "<div>sub: #{subdirectory}</div>"
+        # if this is a directory
+        # if subdirectory.pages.length == 0
+        if subdirectory.depth == 1
+          # either: SUBDIRECTORIES - LEVEL 1 (-> 2)
+          links += "<a class=\"caption d-block text-uppercase no-wrap px-2 py-0\" href=\"/#{subdirectory.directory}/\">#{subdirectory.directory}</a>"
+        else
+          # or: SUBDIRECTORIES - LEVEL 2+ (-> 3+)
+          links += "<li class=\"toc level-#{subdirectory.depth + 1}\">"
+          links += "<a class=\"d-flex flex-items-baseline\" href=\"/#{subdirectory.directory}/\">#{subdirectory.directory}</a>"
+          links += "</li>"
+        end
+        links += "<ul>"
+        links += subdirectory_links(subdirectory.subdirectories)
+        subdirectory.pages.each do |page|
+          # render link to page
+        end
+        links += "</ul>"
+      end
+      links
+    end
+
     def render(context)
       urls_json = lookup(context, 'site_files_urls_json')
       urls = JSON.parse(urls_json)
-      @root = Node.new(0, "")
+      root = Node.new(0, "")
       urls.each do |url|
-        @root.add_file_path(url)
+        root.add_file_path(url)
       end
-      # @root.collect_items("").map { |item| "#{item.path} (#{item.depth})" }.join("<br/>")
       # ROOT FILES - LEVEL 0 (-> 1)
       sidebar = "<ul>"
-      sidebar += "<li class=\"toc level-1\" data-sort=\"1\" data-level=\"1\">"
-      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/file.html\">file level 1</a>"
-      sidebar += "</li>"
-      sidebar += "</ul>"
-      # either: SUBDIRECTORIES - LEVEL 1 (-> 2)
-      sidebar += "<a class=\"caption d-block text-uppercase no-wrap px-2 py-0\" href=\"/directory2/\">directory level 2</a>"
-      # SUBDIRECTORY ITEMS
-      sidebar += "<ul>"
-      sidebar += "<li class=\"toc level-2\" data-level=\"2\">"
-      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory2/file1.html\">file1 level 2</a>"
-      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory2/file2.html\">file2 level 2</a>"
-      sidebar += "</li>"
-      sidebar += "</ul>"
-      # or: SUBDIRECTORIES - LEVEL 2+ (-> 3+)
-      sidebar += "<li class=\"toc level-2\">"
-      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/\">directory level 3+</a>"
-      sidebar += "<ul>"
-      # files at this level
-      sidebar += "<li class=\"toc level-3\" data-level=\"3\">"
-      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/file1.html\">file1 level 3+</a>"
-      sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/file2.html\">file2 level 3+</a>"
-      sidebar += "</li>"
-      sidebar += "</ul>"
-      sidebar += "</li>"
-      @root.collect_items("").each do |item|
+      root.pages.each do |page|
+        sidebar += top_level_page_link(page)
       end
+      sidebar += "</ul>"
+      sidebar += subdirectory_links(root.subdirectories)
+      # # SUBDIRECTORY 2 ITEMS
+      # sidebar += "<li class=\"toc level-2\" data-level=\"2\">"
+      # sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory2/file1.html\">file1 level 2</a>"
+      # sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory2/file2.html\">file2 level 2</a>"
+      # sidebar += "</li>"
+      # # SUBDIRECTORY 3+ ITEMS
+      # sidebar += "<li class=\"toc level-3\" data-level=\"3\">"
+      # sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/file1.html\">file1 level 3+</a>"
+      # sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/file2.html\">file2 level 3+</a>"
+      # sidebar += "</li>"
+      # sidebar += "</ul>"
       sidebar
     end
   end
@@ -58,7 +79,10 @@ module Jekyll
   class Node
     SEPARATOR = '/'
 
+    attr_reader :depth
     attr_reader :directory
+    attr_reader :pages
+    attr_reader :subdirectories
 
     def initialize(depth, directory)
       @depth = depth
@@ -109,7 +133,7 @@ module Jekyll
 
     def to_s
       "Node{" +
-        "level=#{@depth}" +
+        "depth=#{@depth}" +
         ", directory='#{@directory}'" +
         ", pages=#{@pages}" +
         ", subdirectories=#{@subdirectories}}"
@@ -120,6 +144,8 @@ module Jekyll
 
     attr_reader :path
     attr_reader :depth
+    attr_reader :is_directory
+    attr_reader :name
 
     def initialize(is_directory, name, path, depth)
       @is_directory = is_directory
