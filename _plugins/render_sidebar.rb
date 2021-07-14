@@ -23,27 +23,38 @@ module Jekyll
     def subdirectory_links(subdirectories)
       links = ""
       subdirectories.each do |subdir|
-        # links += "<div>sub: #{subdir}</div>"
-        # if this is a directory
-        # if subdir.pages.length == 0
         abs_dir_path = subdir.absolute_dir_path
         if subdir.depth == 1
-          # either: SUBDIRECTORIES - LEVEL 1 (-> 2)
+          # SUBDIRECTORIES - LEVEL 1
           links += "<a class=\"caption d-block text-uppercase no-wrap px-2 py-0\" href=\"#{abs_dir_path}\">#{subdir.directory}</a>"
         else
-          # or: SUBDIRECTORIES - LEVEL 2+ (-> 3+)
-          links += "<li class=\"toc level-#{subdir.depth + 1}\">"
+          # SUBDIRECTORIES - LEVEL 2+
           links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}\">#{subdir.directory}</a>"
-          links += "</li>"
         end
-        links += "<ul>"
-        links += subdirectory_links(subdir.subdirectories)
+        links += "<ul>" # _toctree.liquid
         subdir.pages.each do |page|
-          # render link to page
+          links += "<li class=\"toc level-#{subdir.depth}\" data-level=\"#{subdir.depth}\">"
+          links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}#{page}\">"
+          links += page
+          links += "</a></li>"
         end
-        links += "</ul>"
+        links += "<li class=\"toc level-#{subdir.depth}\">"
+        links += subdirectory_links(subdir.subdirectories)
+        links += "</li>"
+        links += "</ul>" # _toctree.liquid end
       end
       links
+    end
+
+    def render_sidebar(root)
+      # ROOT PAGES - LEVEL 0
+      sidebar = "<ul>" # toctree.liquid start
+      root.pages.each do |page|
+        sidebar += top_level_page_link(page)
+      end
+      sidebar += "</ul>" # toctree.liquid end
+      sidebar += subdirectory_links(root.subdirectories)
+      sidebar
     end
 
     def render(context)
@@ -53,25 +64,7 @@ module Jekyll
       urls.each do |url|
         root.add_file_path(url)
       end
-      # ROOT FILES - LEVEL 0 (-> 1)
-      sidebar = "<ul>"
-      root.pages.each do |page|
-        sidebar += top_level_page_link(page)
-      end
-      sidebar += "</ul>"
-      sidebar += subdirectory_links(root.subdirectories)
-      # # SUBDIRECTORY 2 ITEMS
-      # sidebar += "<li class=\"toc level-2\" data-level=\"2\">"
-      # sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory2/file1.html\">file1 level 2</a>"
-      # sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory2/file2.html\">file2 level 2</a>"
-      # sidebar += "</li>"
-      # # SUBDIRECTORY 3+ ITEMS
-      # sidebar += "<li class=\"toc level-3\" data-level=\"3\">"
-      # sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/file1.html\">file1 level 3+</a>"
-      # sidebar += "<a class=\"d-flex flex-items-baseline\" href=\"/directory3+/file2.html\">file2 level 3+</a>"
-      # sidebar += "</li>"
-      # sidebar += "</ul>"
-      sidebar
+      render_sidebar(root)
     end
   end
 
