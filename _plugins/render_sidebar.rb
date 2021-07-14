@@ -20,7 +20,7 @@ module Jekyll
       link
     end
 
-    def subdirectory_links(subdirectories)
+    def subdirectory_links(subdirectories, dir_to_title)
       links = ""
       subdirectories.each do |subdir|
         abs_dir_path = subdir.absolute_dir_path
@@ -31,7 +31,7 @@ module Jekyll
           # SUBDIRECTORIES - LEVEL 2+
           links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}\">"
         end
-        links += subdir.directory
+        links += dir_to_title[subdir.absolute_dir_path] != nil ? dir_to_title[subdir.absolute_dir_path] : subdir.directory
         links += "</a>"
         links += "<ul>" # _toctree.liquid
         subdir.pages.each do |page|
@@ -41,32 +41,45 @@ module Jekyll
           links += "</a></li>"
         end
         links += "<li class=\"toc level-#{subdir.depth}\">"
-        links += subdirectory_links(subdir.subdirectories)
+        links += subdirectory_links(subdir.subdirectories, dir_to_title)
         links += "</li>"
         links += "</ul>" # _toctree.liquid end
       end
       links
     end
 
-    def render_sidebar(root)
+    def render_sidebar(root, dir_to_title)
       # ROOT PAGES - LEVEL 0
       sidebar = "<ul>" # toctree.liquid start
       root.pages.each do |page|
         sidebar += top_level_page_link(page, root)
       end
       sidebar += "</ul>" # toctree.liquid end
-      sidebar += subdirectory_links(root.subdirectories)
+      sidebar += subdirectory_links(root.subdirectories, dir_to_title)
       sidebar
     end
 
     def render(context)
+      # directory paths, e.g. ["/","/test_long/folder1/","/test_long/folder1/folder2/"...]
+      dirs_dirs_json = lookup(context, 'site_dirs_dirs_json')
+      # directory titles, e.g. [null,"I’m folder1","I’m folder2",...]
+      dirs_titles_json = lookup(context, 'site_dirs_titles_json')
+      dirs_dirs = JSON.parse(dirs_dirs_json)
+      dirs_titles = JSON.parse(dirs_titles_json)
+      dir_to_title = {}
+      (0..dirs_dirs.length - 1).each do |i|
+        dir_to_title[dirs_dirs[i]] = dirs_titles[i]
+      end
+      root = Node.new(0, "")
+      # file urls, e.g. ["/about.html","/contactus.html","/test_long/folder1/file1.html"...]
       urls_json = lookup(context, 'site_files_urls_json')
+      # file titles, e.g. ["About","Contact Us","file1"...]
       titles_json = lookup(context, 'site_files_titles_json')
+      # file sort, e.g. [null,null,null,...,9,10,11]
       sort_json = lookup(context, 'site_files_sort_json')
       urls = JSON.parse(urls_json)
       titles = JSON.parse(titles_json)
       sort = JSON.parse(sort_json)
-      root = Node.new(0, "")
       paths = []
       (0..urls.length - 1).each do |i|
         paths << Path.new(urls[i], titles[i], sort[i])
@@ -74,7 +87,7 @@ module Jekyll
       paths.each do |path|
         root.add_file_path(path)
       end
-      render_sidebar(root)
+      render_sidebar(root, dir_to_title)
     end
   end
 
@@ -134,6 +147,7 @@ module Jekyll
     attr_reader :parent
     SEPARATOR = '/'
 
+    # TODO: remove @parent and 'absolute_dir_path' and store the directory @path instead
     def initialize(depth, directory, parent = nil)
       @parent = parent
       @depth = depth
@@ -186,38 +200,10 @@ module Jekyll
         ", pages=#{@pages}" +
         ", subdirectories=#{@subdirectories}}"
     end
-
-    def print_paths(node)
-      print_pages(node)
-      if node.subdirectories.length > 0
-        node.subdirectories.each do |subdirectory|
-          print_paths(subdirectory)
-        end
-      end
-    end
-
-    def print_pages(node)
-      node.pages.each do |page|
-        puts node.absolute_dir_path + page
-      end
-    end
   end
 
   def test
     root = Node.new(0, "")
-    root.add_file_path("/rootfile.html")
-    root.add_file_path("/foo/foo.html")
-    root.add_file_path("/bar/bar.html")
-    root.add_file_path("/a/b/c/d2.html")
-    root.add_file_path("/a/b/c/d1.html")
-    root.add_file_path("/a/aa/aaa/aaaa.html")
-    root.add_file_path("/a/aa.html")
-    puts "PRINTING NODE"
-    puts root
-    puts "PRINTING ITEMS"
-    puts root.collect_items("")
-    puts "PRINTING PATHS"
-    root.print_paths(root)
   end
 
   # test

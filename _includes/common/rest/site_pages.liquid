@@ -14,6 +14,29 @@
     {% endif %}
 {% endfor %}
 
+<div style="padding-left: 400px">site_dirs</div>
+<div style="padding-left: 400px">{{ site_dirs | jsonify }}</div>
+
+{% assign site_dirs_dirs = "" | split: "" %}
+{% for d in site_dirs %}
+    {% assign site_dirs_dirs = site_dirs_dirs | push:d.dir %}
+{% endfor %}
+{% assign site_dirs_dirs_json = site_dirs_dirs | jsonify %}
+
+<div></div>
+<div style="padding-left: 400px">site_dirs_dirs_json</div>
+<div style="padding-left: 400px">{{ site_dirs_dirs_json }}</div>
+
+{% assign site_dirs_titles = "" | split: "" %}
+{% for d in site_dirs %}
+    {% assign site_dirs_titles = site_dirs_titles | push:d.title %}
+{% endfor %}
+{% assign site_dirs_titles_json = site_dirs_titles | jsonify %}
+
+<div></div>
+<div style="padding-left: 400px">site_dirs_titles_json</div>
+<div style="padding-left: 400px">{{ site_dirs_titles_json }}</div>
+
 {% assign site_files_urls = "" | split: "" %}
 {% for p in site_pages %}
     {% if p.dir != p.url %}
@@ -24,6 +47,7 @@
 {% endfor %}
 {% assign site_files_urls_json = site_files_urls | jsonify %}
 
+<div></div>
 <div style="padding-left: 400px">site_files_urls_json</div>
 <div style="padding-left: 400px">{{ site_files_urls_json }}</div>
 
@@ -37,6 +61,7 @@
 {% endfor %}
 {% assign site_files_dirs_json = site_files_dirs | jsonify %}
 
+<div></div>
 <div style="padding-left: 400px">site_files_dirs_json</div>
 <div style="padding-left: 400px">{{ site_files_dirs_json }}</div>
 
@@ -50,6 +75,7 @@
 {% endfor %}
 {% assign site_files_names_json = site_files_names | jsonify %}
 
+<div></div>
 <div style="padding-left: 400px">site_files_names_json</div>
 <div style="padding-left: 400px">{{ site_files_names_json }}</div>
 
@@ -63,6 +89,7 @@
 {% endfor %}
 {% assign site_files_titles_json = site_files_titles | jsonify %}
 
+<div></div>
 <div style="padding-left: 400px">site_files_titles_json</div>
 <div style="padding-left: 400px">{{ site_files_titles_json }}</div>
 
@@ -76,5 +103,6 @@
 {% endfor %}
 {% assign site_files_sort_json = site_files_sort | jsonify %}
 
+<div></div>
 <div style="padding-left: 400px">site_files_sort_json</div>
 <div style="padding-left: 400px">{{ site_files_sort_json }}</div>
