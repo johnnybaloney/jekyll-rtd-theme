@@ -148,6 +148,7 @@ module Jekyll
     SEPARATOR = '/'
 
     # TODO: remove @parent and 'absolute_dir_path' and store the directory @path instead
+    # TODO: page links don't expand to headers
     def initialize(depth, directory, parent = nil)
       @parent = parent
       @depth = depth
