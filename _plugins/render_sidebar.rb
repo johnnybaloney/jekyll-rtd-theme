@@ -22,22 +22,23 @@ module Jekyll
 
     def subdirectory_links(subdirectories)
       links = ""
-      subdirectories.each do |subdirectory|
-        links += "<div>sub: #{subdirectory}</div>"
+      subdirectories.each do |subdir|
+        # links += "<div>sub: #{subdir}</div>"
         # if this is a directory
-        # if subdirectory.pages.length == 0
-        if subdirectory.depth == 1
+        # if subdir.pages.length == 0
+        abs_dir_path = subdir.absolute_dir_path
+        if subdir.depth == 1
           # either: SUBDIRECTORIES - LEVEL 1 (-> 2)
-          links += "<a class=\"caption d-block text-uppercase no-wrap px-2 py-0\" href=\"/#{subdirectory.directory}/\">#{subdirectory.directory}</a>"
+          links += "<a class=\"caption d-block text-uppercase no-wrap px-2 py-0\" href=\"#{abs_dir_path}\">#{subdir.directory}</a>"
         else
           # or: SUBDIRECTORIES - LEVEL 2+ (-> 3+)
-          links += "<li class=\"toc level-#{subdirectory.depth + 1}\">"
-          links += "<a class=\"d-flex flex-items-baseline\" href=\"/#{subdirectory.directory}/\">#{subdirectory.directory}</a>"
+          links += "<li class=\"toc level-#{subdir.depth + 1}\">"
+          links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}\">#{subdir.directory}</a>"
           links += "</li>"
         end
         links += "<ul>"
-        links += subdirectory_links(subdirectory.subdirectories)
-        subdirectory.pages.each do |page|
+        links += subdirectory_links(subdir.subdirectories)
+        subdir.pages.each do |page|
           # render link to page
         end
         links += "</ul>"
@@ -83,8 +84,10 @@ module Jekyll
     attr_reader :directory
     attr_reader :pages
     attr_reader :subdirectories
+    attr_reader :parent
 
-    def initialize(depth, directory)
+    def initialize(depth, directory, parent = nil)
+      @parent = parent
       @depth = depth
       @directory = directory
       @pages = SortedSet.new
@@ -109,22 +112,19 @@ module Jekyll
           return
         end
       end
-      new_subdirectory = Node.new(@depth + 1, first)
+      new_subdirectory = Node.new(@depth + 1, first, self)
       @subdirectories << new_subdirectory
       new_subdirectory.add_file_path_list(other)
     end
 
-    def collect_items(parent)
-      items = SortedSet.new
-      current_dir_abs_path = parent + @directory + SEPARATOR
-      items.add(Item.new(true, @directory, current_dir_abs_path, @depth))
-      @pages.each do |page|
-        items.add(Item.new(false, page, current_dir_abs_path + page, @depth))
+    def absolute_dir_path
+      path = directory + SEPARATOR
+      node = self
+      while node.parent != nil do
+        node = node.parent
+        path = node.directory + SEPARATOR + path
       end
-      @subdirectories.each do |subdirectory|
-        items.merge(subdirectory.collect_items(current_dir_abs_path))
-      end
-      items
+      path
     end
 
     def <=>(o)
@@ -138,50 +138,38 @@ module Jekyll
         ", pages=#{@pages}" +
         ", subdirectories=#{@subdirectories}}"
     end
-  end
 
-  class Item
-
-    attr_reader :path
-    attr_reader :depth
-    attr_reader :is_directory
-    attr_reader :name
-
-    def initialize(is_directory, name, path, depth)
-      @is_directory = is_directory
-      @name = name
-      @path = path
-      @depth = depth
+    def print_paths(node)
+      print_pages(node)
+      if node.subdirectories.length > 0
+        node.subdirectories.each do |subdirectory|
+          print_paths(subdirectory)
+        end
+      end
     end
 
-    def <=>(o)
-      @path <=> o.path
-    end
-
-    def to_s
-      "Item{" +
-        "is_directory=#{@is_directory}" +
-        ", name='#{@name}'" +
-        ", path='#{@path}'" +
-        ", depth=#{@depth}}"
+    def print_pages(node)
+      node.pages.each do |page|
+        puts node.absolute_dir_path + page
+      end
     end
   end
 
   def test
-    @root = Node.new(0, "")
-    @root.add_file_path("/foo.html")
-    @root.add_file_path("/rootfile.html")
-    @root.add_file_path("/foo/foo.html")
-    @root.add_file_path("/bar/bar.html")
-    @root.add_file_path("/a/b/c/d2.html")
-    @root.add_file_path("/a/b/c/d1.html")
-    @root.add_file_path("/a/a/a/a.html")
+    root = Node.new(0, "")
+    root.add_file_path("/rootfile.html")
+    root.add_file_path("/foo/foo.html")
+    root.add_file_path("/bar/bar.html")
+    root.add_file_path("/a/b/c/d2.html")
+    root.add_file_path("/a/b/c/d1.html")
+    root.add_file_path("/a/aa/aaa/aaaa.html")
+    root.add_file_path("/a/aa.html")
     puts "PRINTING NODE"
-    puts @root
+    puts root
     puts "PRINTING ITEMS"
-    puts @root.collect_items("")
-    puts "PRINTING ITEMS with JOIN"
-    puts @root.collect_items("").map { |item| "#{item.path} (#{item.depth})" }.join("<br/>")
+    puts root.collect_items("")
+    puts "PRINTING PATHS"
+    root.print_paths(root)
   end
 
   # test
