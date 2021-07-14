@@ -13,8 +13,8 @@ module Jekyll
       lookup
     end
 
-    def top_level_page_link(page)
-      link = "<li class=\"toc level-1\" data-sort=\"1\" data-level=\"1\">"
+    def top_level_page_link(page, root)
+      link = "<li class=\"toc level-#{root.depth}\" data-sort=\"#{page.sort}\" data-level=\"#{root.depth}\">"
       link += "<a class=\"d-flex flex-items-baseline\" href=\"/#{page.page}\">#{page.title}</a>"
       link += "</li>"
       link
@@ -26,16 +26,18 @@ module Jekyll
         abs_dir_path = subdir.absolute_dir_path
         if subdir.depth == 1
           # SUBDIRECTORIES - LEVEL 1
-          links += "<a class=\"caption d-block text-uppercase no-wrap px-2 py-0\" href=\"#{abs_dir_path}\">#{subdir.directory}</a>"
+          links += "<a class=\"caption d-block text-uppercase no-wrap px-2 py-0\" href=\"#{abs_dir_path}\">"
         else
           # SUBDIRECTORIES - LEVEL 2+
-          links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}\">#{subdir.directory}</a>"
+          links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}\">"
         end
+        links += subdir.directory
+        links += "</a>"
         links += "<ul>" # _toctree.liquid
         subdir.pages.each do |page|
-          links += "<li class=\"toc level-#{subdir.depth}\" data-level=\"#{subdir.depth}\">"
+          links += "<li class=\"toc level-#{subdir.depth}\" data-sort=\"#{page.sort}\" data-level=\"#{subdir.depth}\">"
           links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}#{page.page}\">"
-          links += page.title
+          links += (page.sort != nil ? "#{page.sort}. " : "") + page.title
           links += "</a></li>"
         end
         links += "<li class=\"toc level-#{subdir.depth}\">"
@@ -50,7 +52,7 @@ module Jekyll
       # ROOT PAGES - LEVEL 0
       sidebar = "<ul>" # toctree.liquid start
       root.pages.each do |page|
-        sidebar += top_level_page_link(page)
+        sidebar += top_level_page_link(page, root)
       end
       sidebar += "</ul>" # toctree.liquid end
       sidebar += subdirectory_links(root.subdirectories)
@@ -82,6 +84,7 @@ module Jekyll
     attr_reader :path
     attr_reader :title
     attr_reader :sort
+
     def initialize(path, title, sort)
       @path = path
       @title = title
@@ -94,6 +97,7 @@ module Jekyll
     attr_reader :path
     attr_reader :title
     attr_reader :sort
+
     def initialize(page, path, title, sort)
       @page = page
       @path = path
@@ -102,7 +106,15 @@ module Jekyll
     end
 
     def <=>(o)
-      @page <=> o.page
+      if sort == nil && o.sort != nil
+        1
+      elsif sort != nil && o.sort == nil
+        -1
+      elsif sort != nil && o.sort != nil
+        sort <=> o.sort
+      else
+        @page <=> o.page
+      end
     end
 
     def to_s
@@ -121,6 +133,7 @@ module Jekyll
     attr_reader :subdirectories
     attr_reader :parent
     SEPARATOR = '/'
+
     def initialize(depth, directory, parent = nil)
       @parent = parent
       @depth = depth
