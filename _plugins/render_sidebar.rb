@@ -15,7 +15,7 @@ module Jekyll
 
     def top_level_page_link(page)
       link = "<li class=\"toc level-1\" data-sort=\"1\" data-level=\"1\">"
-      link += "<a class=\"d-flex flex-items-baseline\" href=\"/#{page}\">#{page}</a>"
+      link += "<a class=\"d-flex flex-items-baseline\" href=\"/#{page.page}\">#{page.title}</a>"
       link += "</li>"
       link
     end
@@ -34,8 +34,8 @@ module Jekyll
         links += "<ul>" # _toctree.liquid
         subdir.pages.each do |page|
           links += "<li class=\"toc level-#{subdir.depth}\" data-level=\"#{subdir.depth}\">"
-          links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}#{page}\">"
-          links += page
+          links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}#{page.page}\">"
+          links += page.title
           links += "</a></li>"
         end
         links += "<li class=\"toc level-#{subdir.depth}\">"
@@ -89,6 +89,31 @@ module Jekyll
     end
   end
 
+  class WebPage
+    attr_reader :page
+    attr_reader :path
+    attr_reader :title
+    attr_reader :sort
+    def initialize(page, path, title, sort)
+      @page = page
+      @path = path
+      @title = title
+      @sort = sort
+    end
+
+    def <=>(o)
+      @page <=> o.page
+    end
+
+    def to_s
+      "Page{" +
+        "page=#{@page}" +
+        ", path='#{@path}'" +
+        ", title=#{@title}" +
+        ", sort=#{@sort}}"
+    end
+  end
+
   class Node
     attr_reader :depth
     attr_reader :directory
@@ -113,7 +138,7 @@ module Jekyll
       first = dir_segments[0]
       other = dir_segments[1..-1]
       if other.length == 0
-        @pages << first
+        @pages << WebPage.new(first, path.path, path.title, path.sort)
         return
       end
       @subdirectories.each do |subdirectory|
