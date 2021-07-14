@@ -59,10 +59,18 @@ module Jekyll
 
     def render(context)
       urls_json = lookup(context, 'site_files_urls_json')
+      titles_json = lookup(context, 'site_files_titles_json')
+      sort_json = lookup(context, 'site_files_sort_json')
       urls = JSON.parse(urls_json)
+      titles = JSON.parse(titles_json)
+      sort = JSON.parse(sort_json)
       root = Node.new(0, "")
-      urls.each do |url|
-        root.add_file_path(url)
+      paths = []
+      (0..urls.length - 1).each do |i|
+        paths << Path.new(urls[i], titles[i], sort[i])
+      end
+      paths.each do |path|
+        root.add_file_path(path)
       end
       render_sidebar(root)
     end
@@ -70,15 +78,24 @@ module Jekyll
 
   require "set"
 
-  class Node
-    SEPARATOR = '/'
+  class Path
+    attr_reader :path
+    attr_reader :title
+    attr_reader :sort
+    def initialize(path, title, sort)
+      @path = path
+      @title = title
+      @sort = sort
+    end
+  end
 
+  class Node
     attr_reader :depth
     attr_reader :directory
     attr_reader :pages
     attr_reader :subdirectories
     attr_reader :parent
-
+    SEPARATOR = '/'
     def initialize(depth, directory, parent = nil)
       @parent = parent
       @depth = depth
@@ -88,11 +105,11 @@ module Jekyll
     end
 
     def add_file_path(path)
-      dir_segments = path[1..-1].split(SEPARATOR)
-      add_file_path_list(dir_segments)
+      dir_segments = path.path[1..-1].split(SEPARATOR)
+      add_file_path_list(path, dir_segments)
     end
 
-    def add_file_path_list(dir_segments)
+    def add_file_path_list(path, dir_segments)
       first = dir_segments[0]
       other = dir_segments[1..-1]
       if other.length == 0
@@ -101,13 +118,13 @@ module Jekyll
       end
       @subdirectories.each do |subdirectory|
         if subdirectory.directory == first
-          subdirectory.add_file_path_list(other)
+          subdirectory.add_file_path_list(path, other)
           return
         end
       end
       new_subdirectory = Node.new(@depth + 1, first, self)
       @subdirectories << new_subdirectory
-      new_subdirectory.add_file_path_list(other)
+      new_subdirectory.add_file_path_list(path, other)
     end
 
     def absolute_dir_path

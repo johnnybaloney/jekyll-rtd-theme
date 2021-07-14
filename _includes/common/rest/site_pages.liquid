@@ -24,6 +24,9 @@
 {% endfor %}
 {% assign site_files_urls_json = site_files_urls | jsonify %}
 
+<div style="padding-left: 400px">site_files_urls_json</div>
+<div style="padding-left: 400px">{{ site_files_urls_json }}</div>
+
 {% assign site_files_dirs = "" | split: "" %}
 {% for p in site_pages %}
     {% if p.dir != p.url %}
@@ -33,6 +36,9 @@
     {% endif %}
 {% endfor %}
 {% assign site_files_dirs_json = site_files_dirs | jsonify %}
+
+<div style="padding-left: 400px">site_files_dirs_json</div>
+<div style="padding-left: 400px">{{ site_files_dirs_json }}</div>
 
 {% assign site_files_names = "" | split: "" %}
 {% for p in site_pages %}
@@ -44,6 +50,9 @@
 {% endfor %}
 {% assign site_files_names_json = site_files_names | jsonify %}
 
+<div style="padding-left: 400px">site_files_names_json</div>
+<div style="padding-left: 400px">{{ site_files_names_json }}</div>
+
 {% assign site_files_titles = "" | split: "" %}
 {% for p in site_pages %}
     {% if p.dir != p.url %}
@@ -54,6 +63,9 @@
 {% endfor %}
 {% assign site_files_titles_json = site_files_titles | jsonify %}
 
+<div style="padding-left: 400px">site_files_titles_json</div>
+<div style="padding-left: 400px">{{ site_files_titles_json }}</div>
+
 {% assign site_files_sort = "" | split: "" %}
 {% for p in site_pages %}
     {% if p.dir != p.url %}
@@ -63,3 +75,6 @@
     {% endif %}
 {% endfor %}
 {% assign site_files_sort_json = site_files_sort | jsonify %}
+
+<div style="padding-left: 400px">site_files_sort_json</div>
+<div style="padding-left: 400px">{{ site_files_sort_json }}</div>
