@@ -29,6 +29,7 @@ module Jekyll
           links += "<a class=\"caption d-block text-uppercase no-wrap px-2 py-0\" href=\"#{abs_dir_path}\">"
         else
           # SUBDIRECTORIES - LEVEL 2+
+          links += "<li class=\"toc level-#{subdir.depth - 1}\">"
           links += "<a class=\"d-flex flex-items-baseline\" href=\"#{abs_dir_path}\">"
         end
         links += dir_to_title[subdir.absolute_dir_path] != nil ? dir_to_title[subdir.absolute_dir_path] : subdir.directory
@@ -41,11 +42,12 @@ module Jekyll
           links += "</a></li>"
         end
         if subdir.subdirectories.length > 0
-          links += "<li class=\"toc level-#{subdir.depth}\">"
           links += subdirectory_links(subdir.subdirectories, dir_to_title)
-          links += "</li>"
         end
         links += "</ul>" # _toctree.liquid end
+        if subdir.depth > 1
+          links += "</li>"
+        end
       end
       links
     end
@@ -150,7 +152,8 @@ module Jekyll
     SEPARATOR = '/'
 
     # TODO: remove @parent and 'absolute_dir_path' and store the directory @path instead
-    # TODO: page links don't expand to headers
+    # TODO: fallback on url if title is absent
+    # TODO: support for empty folders
     def initialize(depth, directory, parent = nil)
       @parent = parent
       @depth = depth
