@@ -68,34 +68,30 @@ module Jekyll
     def render(context)
       # path of the currently processed page
       current_page_path = lookup(context, 'page.url')
+      site_pages = lookup(context, 'site.html_pages')
+      site_pages_directories = site_pages.select { |page| page.dir == page.url }
+      site_pages_files = site_pages.select { |page| page.dir != page.url && (!page.url.include? "README.html") }
       # directory paths, e.g. ["/","/test_long/folder1/","/test_long/folder1/folder2/"...]
-      dirs_dirs_json = lookup(context, 'site_dirs_dirs_json')
       # directory titles, e.g. [null,"I’m folder1","I’m folder2",...]
-      dirs_titles_json = lookup(context, 'site_dirs_titles_json')
-      dirs_dirs = JSON.parse(dirs_dirs_json)
-      dirs_titles = JSON.parse(dirs_titles_json)
-      dir_to_title = {}
-      (0..dirs_dirs.length - 1).each do |i|
-        dir_to_title[dirs_dirs[i]] = dirs_titles[i]
+      _dir_to_title = {}
+      site_pages_directories.each do |page|
+        _dir_to_title[page.dir] = page.data['title']
+      end
+      # file urls, e.g. ["/about.html","/contactus.html","/test_long/folder1/file1.html"...]
+      # file titles, e.g. ["About","Contact Us","file1"...]
+      # file sort, e.g. [null,null,null,...,9,10,11]
+      _paths = []
+      site_pages_files.each do |page|
+        if page.url == '/404.html' || page.url == '/search.html'
+          next
+        end
+        _paths << Path.new(page.url, page.data['title'], page.data['sort'])
       end
       root = Node.new(0, "")
-      # file urls, e.g. ["/about.html","/contactus.html","/test_long/folder1/file1.html"...]
-      urls_json = lookup(context, 'site_files_urls_json')
-      # file titles, e.g. ["About","Contact Us","file1"...]
-      titles_json = lookup(context, 'site_files_titles_json')
-      # file sort, e.g. [null,null,null,...,9,10,11]
-      sort_json = lookup(context, 'site_files_sort_json')
-      urls = JSON.parse(urls_json)
-      titles = JSON.parse(titles_json)
-      sort = JSON.parse(sort_json)
-      paths = []
-      (0..urls.length - 1).each do |i|
-        paths << Path.new(urls[i], titles[i], sort[i])
-      end
-      paths.each do |path|
+      _paths.each do |path|
         root.add_file_path(path)
       end
-      render_sidebar(root, dir_to_title, current_page_path)
+      render_sidebar(root, _dir_to_title, current_page_path)
     end
   end
 
@@ -110,6 +106,13 @@ module Jekyll
       @path = path
       @title = title
       @sort = sort
+    end
+
+    def to_s
+      "Path{" +
+        "path=#{@path}" +
+        ", title='#{@title}'" +
+        ", sort=#{@sort}}"
     end
   end
 
@@ -158,6 +161,7 @@ module Jekyll
     # TODO: remove @parent and 'absolute_dir_path' and store the directory @path instead
     # TODO: fallback on url if title is absent
     # TODO: support for empty folders
+    # TODO: remove redundant liquid files
     def initialize(depth, directory, parent = nil)
       @parent = parent
       @depth = depth
