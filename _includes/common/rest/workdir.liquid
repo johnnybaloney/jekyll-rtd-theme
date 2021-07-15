@@ -1,4 +1,3 @@
-<!-- collects directories at the current (=workdir) level -->
 {%- assign workdir = include.workdir | default: "/" -%}
 
 {%- assign workdir_level = workdir | append: "temp" | replace_first: "/", "" | split: "/" | size -%}
