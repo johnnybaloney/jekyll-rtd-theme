@@ -35,7 +35,7 @@ module Jekyll
         end
         links += dir_to_title[subdir.absolute_dir_path] != nil ? dir_to_title[subdir.absolute_dir_path] : subdir.directory
         links += "</a>"
-        links += "<ul>" # _toctree.liquid
+        links += "<ul>" # former '_toctree.liquid' start
         subdir.pages.each do |page|
           current = current_page_path == "#{abs_dir_path}#{page.page}" ? "current" : ""
           links += "<li class=\"toc level-#{subdir.depth} #{current}\" data-sort=\"#{page.sort}\" data-level=\"#{subdir.depth}\">"
@@ -46,7 +46,7 @@ module Jekyll
         if subdir.subdirectories.length > 0
           links += subdirectory_links(subdir.subdirectories, dir_to_title, current_page_path)
         end
-        links += "</ul>" # _toctree.liquid end
+        links += "</ul>" # former '_toctree.liquid' end
         if subdir.depth > 1
           links += "</li>"
         end
@@ -56,11 +56,11 @@ module Jekyll
 
     def render_sidebar(root, dir_to_title, current_page_path)
       # ROOT PAGES - LEVEL 0
-      sidebar = "<ul>" # toctree.liquid start
+      sidebar = "<ul>" # former 'toctree.liquid' start
       root.pages.each do |page|
         sidebar += top_level_page_link(page, root, current_page_path)
       end
-      sidebar += "</ul>" # toctree.liquid end
+      sidebar += "</ul>" # former 'toctree.liquid' end
       sidebar += subdirectory_links(root.subdirectories, dir_to_title, current_page_path)
       sidebar
     end
@@ -161,7 +161,6 @@ module Jekyll
     # TODO: remove @parent and 'absolute_dir_path' and store the directory @path instead
     # TODO: fallback on url if title is absent
     # TODO: support for empty folders
-    # TODO: remove redundant liquid files
     def initialize(depth, directory, parent = nil)
       @parent = parent
       @depth = depth
@@ -219,8 +218,6 @@ module Jekyll
   def test
     root = Node.new(0, "")
   end
-
-  # test
 end
 
 Liquid::Template.register_tag('render_sidebar', Jekyll::RenderSidebar)
