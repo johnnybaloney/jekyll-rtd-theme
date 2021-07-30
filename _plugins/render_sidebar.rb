@@ -15,7 +15,7 @@ module Jekyll
     end
 
     def subdirectory_links(subdirectories, current_page_path)
-      links = ""
+      links = ''
       subdirectories.each do |subdir|
         if subdir.depth == 1
           # SUBDIRECTORIES - LEVEL 1
@@ -63,10 +63,6 @@ module Jekyll
       page_tree = prepare_page_tree(context)
       render_sidebar(page_tree, current_page_path)
     end
-  end
-
-  def test
-    root = PageTree.new(0, "", "", {})
   end
 end
 

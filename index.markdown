@@ -6,4 +6,4 @@ layout: default
 ---
 
 
-This is my index now.
+Index page...
