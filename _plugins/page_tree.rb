@@ -119,6 +119,8 @@ class WebPage
       -1
     elsif sort != nil && o.sort != nil
       sort <=> o.sort
+    elsif title != nil && o.title != nil
+      title <=> o.title
     else
       @file <=> o.file
     end
