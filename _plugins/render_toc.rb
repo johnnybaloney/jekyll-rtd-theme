@@ -11,7 +11,7 @@ module Jekyll
     def render_level(subtree, indent)
       toc = subtree.pages.map { |page| ' ' * indent + "- [#{page.title}](#{page.path})" }.to_a.join(NEWLINE) + NEWLINE
       subtree.subdirectories.map { |subdir|
-        toc += ' ' * indent + "- [#{subdir.directory_title}](#{subdir.directory_path}):#{NEWLINE}"
+        toc += ' ' * indent + "- [<span style=\"font-variant: small-caps;\">#{subdir.directory_title}</span>](#{subdir.directory_path}):#{NEWLINE}"
         toc += render_level(subdir, indent + 4)
       }
       toc
